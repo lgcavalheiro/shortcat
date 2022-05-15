@@ -39,7 +39,7 @@ func TestUrlify(t *testing.T) {
 	res := Urlify(url)
 
 	if strings.Compare(url, res) != 0 {
-		t.Errorf("FAILED, expected %s - git %s", url, res)
+		t.Errorf("FAILED, expected %s - got %s", url, res)
 	}
 }
 
