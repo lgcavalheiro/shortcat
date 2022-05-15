@@ -14,6 +14,7 @@ func ConfigEnv() {
 	viper.SetDefault("APP_PORT", "8034")
 	viper.SetDefault("ADM_USER", "admin")
 	viper.SetDefault("ADM_PWD", "admin")
+	viper.SetDefault("ADM_SECRET", "shortcatadmsecret")
 	viper.SetDefault("DB_NAME", "shortcatdb")
 	viper.SetDefault("USE_DEFAULT_FRONTEND", true)
 

@@ -29,7 +29,7 @@ func Setup() {
 	user := viper.GetString("DB_USER")
 	pwd := viper.GetString("DB_PWD")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, pwd, host, port, dbName) //"root:example@tcp(127.0.0.1:3306)/shortcatdb?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, pwd, host, port, dbName)
 
 	var err error
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})

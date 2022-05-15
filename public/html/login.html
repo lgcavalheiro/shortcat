@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shortcat Login</title>
+  </head>
+  <body>
+    <h1>Shortcat - Admin login</h1>
+    <h2>The simple and minimalistic url shortner</h2>
+    <form method="post" action="/login">
+      <label for="user">
+        Username
+        <input type="text" name="user" id="user" />
+      </label>
+      <label for="pwd">
+        Password
+        <input type="password" name="pwd" id="pwd" />
+      </label>
+      <button type="submit">Login</button>
+    </form>
+    <span>{{ .Error }}</span>
+  </body>
+</html>
