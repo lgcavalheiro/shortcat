@@ -13,21 +13,21 @@ func ApiSetup(router *httprouter.Router) {
 }
 
 func handleApiRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	content, message, status := resolveRootGet()
-	sendJsonResponse(w, content, message, status)
+	resolution := resolveRootGet()
+	sendJsonResponse(w, resolution)
 }
 
 func handleApiRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	content, message, status := resolveRootPost(r.Body)
-	sendJsonResponse(w, content, message, status)
+	resolution := resolveRootPost(r.Body)
+	sendJsonResponse(w, resolution)
 }
 
-func sendJsonResponse(w http.ResponseWriter, content interface{}, message string, status int) {
+func sendJsonResponse(w http.ResponseWriter, res resolution) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+	w.WriteHeader(res.Status)
 	resp := make(map[string]interface{})
-	resp["message"] = message
-	resp["content"] = content
+	resp["message"] = res.Message
+	resp["content"] = res.Content
 	jsonResp, _ := json.Marshal(resp)
 	w.Write(jsonResp)
 }

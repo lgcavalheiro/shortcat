@@ -1,12 +1,10 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/lgcavalheiro/shortcat/model"
 )
 
 func RoutesSetup(router *httprouter.Router, useDefaultFront bool) {
@@ -19,12 +17,13 @@ func RoutesSetup(router *httprouter.Router, useDefaultFront bool) {
 func handleShortcat(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	shortUrl := params.ByName("shorturl")
 
-	shortCat, err := model.GetShortCatByShortUrl(shortUrl)
-	if err != nil {
-		res := []byte(fmt.Sprintf("<h1>Error: %s</h1>", err.Error()))
+	redirect := resolveShortCat(shortUrl)
+	if len(redirect.Error) > 0 {
+		res := []byte(redirect.Error)
+		w.WriteHeader(redirect.Status)
 		w.Write(res)
 		return
 	}
 
-	http.Redirect(w, r, shortCat.Url, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, redirect.Redirect, redirect.Status)
 }

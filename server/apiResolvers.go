@@ -17,24 +17,42 @@ type postBody struct {
 	UserDefinedId string `json:"user_defined_id"`
 }
 
-func resolveRootGet() (interface{}, string, int) {
+type resolution struct {
+	Content interface{}
+	Message string
+	Status  int
+}
+
+func resolveRootGet() resolution {
 	shortcats, err := model.GetAllShortCats()
 	if err != nil {
 		log.Println(err.Error())
-		return fmt.Sprintf("Bad request: %s", err.Error()), "Failed", http.StatusBadRequest
+		return resolution{
+			Content: fmt.Sprintf("Bad request: %s", err.Error()),
+			Message: "Failed",
+			Status:  http.StatusBadRequest,
+		}
 	}
 
-	return shortcats, "Success", http.StatusOK
+	return resolution{
+		Content: shortcats,
+		Message: "Success",
+		Status:  http.StatusOK,
+	}
 }
 
-func resolveRootPost(body io.ReadCloser) (interface{}, string, int) {
+func resolveRootPost(body io.ReadCloser) resolution {
 	var postBody postBody
 	decoder := json.NewDecoder(body)
 	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&postBody)
 	if err != nil {
 		log.Println(err.Error())
-		return fmt.Sprintf("Bad request: %s", err.Error()), "Failed", http.StatusBadRequest
+		return resolution{
+			Content: fmt.Sprintf("Bad request: %s", err.Error()),
+			Message: "Failed",
+			Status:  http.StatusBadRequest,
+		}
 	}
 
 	var shortenedUrl string
@@ -44,7 +62,11 @@ func resolveRootPost(body io.ReadCloser) (interface{}, string, int) {
 		shortenedUrl, err = util.GenerateShortUrl(postBody.IdSize)
 		if err != nil {
 			log.Println(err.Error())
-			return fmt.Sprintf("Server side error: %s", err.Error()), "Failed", http.StatusInternalServerError
+			return resolution{
+				Content: fmt.Sprintf("Server side error: %s", err.Error()),
+				Message: "Failed",
+				Status:  http.StatusInternalServerError,
+			}
 		}
 	}
 
@@ -56,8 +78,16 @@ func resolveRootPost(body io.ReadCloser) (interface{}, string, int) {
 	err = model.CreateShortCat(shortcat)
 	if err != nil {
 		log.Println(err.Error())
-		return fmt.Sprintf("Bad request: %s", err.Error()), "Failed", http.StatusBadRequest
+		return resolution{
+			Content: fmt.Sprintf("Bad request: %s", err.Error()),
+			Message: "Failed",
+			Status:  http.StatusBadRequest,
+		}
 	}
 
-	return shortcat, "Success", http.StatusOK
+	return resolution{
+		Content: shortcat,
+		Message: "Success",
+		Status:  http.StatusOK,
+	}
 }

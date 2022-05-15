@@ -17,9 +17,9 @@ services:
     ports:
       - 8080:8080
 
-  locust:
-    build:
-      context: ./scripts
-      dockerfile: Dockerfile
-    network_mode: host
+  # locust:
+  #   build:
+  #     context: ./scripts
+  #     dockerfile: Dockerfile
+  #   network_mode: host
 
