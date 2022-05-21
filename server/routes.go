@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
@@ -53,6 +54,10 @@ func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 }
 
 func handleLoginGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	_, err := checkLogin(r)
+	if err == nil {
+		http.Redirect(w, r, "/admin", http.StatusTemporaryRedirect)
+	}
 	data := map[string]string{
 		"Error": reqError,
 	}
@@ -78,8 +83,12 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 }
 
 func handleAdminGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	checkLogin(w, r)
-	data := resolveAdminGet()
+	token, err := checkLogin(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+	data := resolveAdminGet(token)
 	templates.ExecuteTemplate(w, "admin.html", data)
 }
 
@@ -105,15 +114,10 @@ func clearSession(w http.ResponseWriter) {
 	})
 }
 
-func checkLogin(w http.ResponseWriter, r *http.Request) {
+func checkLogin(r *http.Request) (string, error) {
 	cookie, err := r.Cookie("shortcat-session")
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-		return
+	if err != nil || cookie.Value != admSecret {
+		return "", errors.New("Invalid cookie")
 	}
-
-	if cookie.Value != admSecret {
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-		return
-	}
+	return cookie.Value, nil
 }

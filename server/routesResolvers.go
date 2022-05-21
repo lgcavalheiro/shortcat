@@ -1,18 +1,33 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/lgcavalheiro/shortcat/model"
+	"github.com/spf13/viper"
 )
 
 type redirection struct {
 	Error    string
 	Redirect string
 	Status   int
+}
+
+type resolveAdminGetResponse struct {
+	Content []model.Shortcat
+	Message string
+	Status  int
+}
+
+type resolveLoginResponse struct {
+	Content interface{}
+	Message string
+	Status  int
 }
 
 func resolveShortCat(shortUrl string) redirection {
@@ -47,10 +62,41 @@ func resolveLogin(user, pwd string) redirection {
 		}
 	}
 
-	if strings.Compare(user, admUser) != 0 || strings.Compare(pwd, admPwd) != 0 {
+	host := viper.GetString("APP_HOST")
+	port := viper.GetString("APP_PORT")
+	jsonData := fmt.Sprintf("{ \"user\": \"%s\", \"pwd\": \"%s\" }", user, pwd)
+
+	resp, err := http.Post(fmt.Sprintf("%s:%s/api/auth", host, port), "application/json", bytes.NewBuffer([]byte(jsonData)))
+	if err != nil {
+		log.Println(err.Error())
 		return redirection{
-			Error:  fmt.Sprintf("Error: %s", "Invalid credentials."),
-			Status: http.StatusUnauthorized,
+			Error:  fmt.Sprintf("Internal server error"),
+			Status: http.StatusInternalServerError,
+		}
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err.Error())
+		return redirection{
+			Error:  fmt.Sprintf("Internal server error"),
+			Status: http.StatusInternalServerError,
+		}
+	}
+
+	var parsedResp resolveLoginResponse
+	err = json.Unmarshal([]byte(body), &parsedResp)
+	if err != nil {
+		log.Println(err.Error())
+		return redirection{
+			Error:  fmt.Sprintf("Internal server error: %s", err.Error()),
+			Status: http.StatusInternalServerError,
+		}
+	}
+	if parsedResp.Message == "Failed" {
+		return redirection{
+			Error:  fmt.Sprintf("Error: %s", parsedResp.Content),
+			Status: http.StatusBadRequest,
 		}
 	}
 
@@ -60,13 +106,30 @@ func resolveLogin(user, pwd string) redirection {
 	}
 }
 
-func resolveAdminGet() map[string]interface{} {
+func resolveAdminGet(token string) map[string]interface{} {
 	data := make(map[string]interface{})
-	shortcats, err := model.GetAllShortCats()
+	host := viper.GetString("APP_HOST")
+	port := viper.GetString("APP_PORT")
+
+	resp, err := http.Get(fmt.Sprintf("%s:%s/api?t=%s", host, port, token))
 	if err != nil {
 		log.Println(err.Error())
 		return data
 	}
-	data["Shortcats"] = shortcats
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err.Error())
+		return data
+	}
+
+	var parsedResp resolveAdminGetResponse
+	err = json.Unmarshal([]byte(body), &parsedResp)
+	if err != nil {
+		log.Println(err.Error())
+		return data
+	}
+
+	data["Shortcats"] = parsedResp.Content
 	return data
 }

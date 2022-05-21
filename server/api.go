@@ -10,15 +10,22 @@ import (
 func ApiSetup(router *httprouter.Router) {
 	router.GET("/api/", handleApiRootGet)
 	router.POST("/api/", handleApiRootPost)
+	router.POST("/api/auth", handleApiAuthPost)
 }
 
 func handleApiRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	resolution := resolveRootGet()
+	token := r.URL.Query().Get("t")
+	resolution := resolveRootGet(token)
 	sendJsonResponse(w, resolution)
 }
 
 func handleApiRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	resolution := resolveRootPost(r.Body)
+	sendJsonResponse(w, resolution)
+}
+
+func handleApiAuthPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	resolution := resolveAuthPost(r.Body)
 	sendJsonResponse(w, resolution)
 }
 

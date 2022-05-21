@@ -10,10 +10,24 @@
     <h1>ADMIN WORKS</h1>
     <a href="/logout">Logout</a>
     <ul>
+      <li>
+        <span>ID</span>
+        <span>Url</span>
+        <span>Short url</span>
+        <span>Clicks</span>
+        <span>Created at</span>
+      </li>
       {{ range .Shortcats }}
       <li>
-        <span>{{ .Url }}</span>
-        <span>{{ .ShortUrl }}</span>
+        <span>{{ .ID }}</span>
+        <span>
+          <a href="{{ .Url }}" }} target="_blank">{{ .Url }}</a>
+        </span>
+        <span>
+          <a href="http://localhost:8034/go/{{ .ShortUrl }}" target="_blank">
+            {{ .ShortUrl }}
+          </a>
+        </span>
         <span>{{ .Clicks }}</span>
         <span>{{ .CreatedAt }}</span>
       </li>
